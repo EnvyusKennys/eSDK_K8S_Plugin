@@ -24,7 +24,6 @@ import (
 
 const (
 	configFile        = "/etc/huawei/csi.json"
-	secretFile        = "/etc/huawei/secret/secret.json"
 	controllerLogFile = "huawei-csi-controller"
 	nodeLogFile       = "huawei-csi-node"
 	csiLogFile        = "huawei-csi"
@@ -71,15 +70,10 @@ var (
 		"Timeout interval in seconds for stale device cleanup")
 
 	config CSIConfig
-	secret CSISecret
 )
 
 type CSIConfig struct {
 	Backends []map[string]interface{} `json:"backends" yaml:"backends"`
-}
-
-type CSISecret struct {
-	Secrets map[string]interface{} `json:"secrets"`
 }
 
 func parseConfig() {
@@ -97,50 +91,11 @@ func parseConfig() {
 		raisePanic("Must configure at least one backend")
 	}
 
-	secretData, err := ioutil.ReadFile(secretFile)
-	if err != nil {
-		raisePanic("Read config file %s error: %v", secretFile, err)
-	}
-
-	err = json.Unmarshal(secretData, &secret)
-	if err != nil {
-		raisePanic("Unmarshal config file %s error: %v", secretFile, err)
-	}
-
-	err = mergeData(config, secret)
-	if err != nil {
-		raisePanic("Merge configs error: %v", err)
-	}
-
 	// nodeName flag is only considered for node plugin
 	if "" == *nodeName && !*controller {
 		log.Warningln("Node name is empty. Topology aware volume provisioning feature may not behave normal")
 	}
 	logrus.Info("Configuration loaded", config)
-}
-
-func getSecret(backendSecret, backendConfig map[string]interface{}, secretKey string) {
-	if secretValue, exist := backendSecret[secretKey].(string); exist {
-		backendConfig[secretKey] = secretValue
-	} else {
-		log.Fatalln(fmt.Sprintf("The key %s is not in secret %v.", secretKey, backendSecret))
-	}
-}
-
-func mergeData(config CSIConfig, secret CSISecret) error {
-	for _, backendConfig := range config.Backends {
-		backendName := backendConfig["name"].(string)
-		Secret, exist := secret.Secrets[backendName]
-		if !exist {
-			return fmt.Errorf("the key %s is not in secret", backendName)
-		}
-
-		backendSecret := Secret.(map[string]interface{})
-		getSecret(backendSecret, backendConfig, "user")
-		getSecret(backendSecret, backendConfig, "password")
-		getSecret(backendSecret, backendConfig, "keyText")
-	}
-	return nil
 }
 
 func updateBackendCapabilities() {
