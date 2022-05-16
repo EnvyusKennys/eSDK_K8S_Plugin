@@ -304,7 +304,7 @@ func (cli *Client) Login() error {
 	cli.deviceid = ""
 	cli.token = ""
 	for i, url := range cli.urls {
-		cli.url = url + "/deviceManager/rest"
+		cli.url = url
 
 		log.Infof("Try to login %s", cli.url)
 		resp, err = cli.baseCall("POST", "/xx/sessions", data)
