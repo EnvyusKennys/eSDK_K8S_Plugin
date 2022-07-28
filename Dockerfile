@@ -1,5 +1,6 @@
-FROM golang:buster AS builder
+FROM golang:1.17-buster AS builder
 
+ENV GOARCH=arm64
 WORKDIR /src
 COPY . /src/
 RUN go build -o bin/huawei-csi ./src/csi
