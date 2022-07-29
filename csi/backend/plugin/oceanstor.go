@@ -10,7 +10,6 @@ import (
 	"huawei-csi-driver/storage/oceanstor/smartx"
 	"huawei-csi-driver/utils"
 	"huawei-csi-driver/utils/log"
-	"huawei-csi-driver/utils/pwd"
 )
 
 const (
@@ -46,21 +45,11 @@ func (p *OceanstorPlugin) init(config map[string]interface{}, keepLogin bool) er
 		return errors.New("password must be provided")
 	}
 
-	keyText, exist := config["keyText"].(string)
-	if !exist {
-		return errors.New("keyText must be provided")
-	}
-
-	decrypted, err := pwd.Decrypt(password, keyText)
-	if err != nil {
-		return err
-	}
-
 	vstoreName, _ := config["vstoreName"].(string)
 	parallelNum, _ := config["parallelNum"].(string)
 
-	cli := client.NewClient(urls, user, decrypted, vstoreName, parallelNum)
-	err = cli.Login(context.Background())
+	cli := client.NewClient(urls, user, password, vstoreName, parallelNum)
+	err := cli.Login(context.Background())
 	if err != nil {
 		return err
 	}

@@ -8,7 +8,6 @@ import (
 	"huawei-csi-driver/storage/fusionstorage/client"
 	"huawei-csi-driver/utils"
 	"huawei-csi-driver/utils/log"
-	"huawei-csi-driver/utils/pwd"
 )
 
 const (
@@ -44,19 +43,9 @@ func (p *FusionStoragePlugin) init(config map[string]interface{}, keepLogin bool
 		return errors.New("password must be provided")
 	}
 
-	keyText, exist := config["keyText"].(string)
-	if !exist {
-		return errors.New("keyText must be provided")
-	}
-
-	decrypted, err := pwd.Decrypt(password, keyText)
-	if err != nil {
-		return err
-	}
-
 	parallelNum, _ := config["parallelNum"].(string)
-	cli := client.NewClient(url, user, decrypted, parallelNum)
-	err = cli.Login(context.Background())
+	cli := client.NewClient(url, user, password, parallelNum)
+	err := cli.Login(context.Background())
 	if err != nil {
 		return err
 	}

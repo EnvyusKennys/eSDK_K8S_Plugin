@@ -23,6 +23,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"time"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
@@ -104,7 +105,7 @@ var (
 )
 
 type CSIConfig struct {
-	Backends []map[string]interface{} `json:"backends"`
+	Backends []map[string]interface{} `json:"backends" yaml:"backends"`
 }
 
 type CSISecret struct {
@@ -144,6 +145,7 @@ func parseConfig() {
 	// nodeName flag is only considered for node plugin
 	if "" == *nodeName && !*controller {
 		log.Warningln("Node name is empty. Topology aware volume provisioning feature may not behave normal")
+		logrus.Info("Configuration loaded", config)
 	}
 
 	if *scanVolumeTimeout < 1 || *scanVolumeTimeout > 600 {
@@ -181,6 +183,15 @@ func mergeData(config CSIConfig, secret CSISecret) error {
 }
 
 func updateBackendCapabilities() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Runtime error caught in updateBackendCapabilities routine: %v", r)
+			log.Errorf("%s", debug.Stack())
+		}
+		log.Flush()
+		log.Close()
+	}()
+
 	err := backend.SyncUpdateCapabilities()
 	if err != nil {
 		raisePanic("Update backend capabilities error: %v", err)
@@ -223,6 +234,7 @@ func raisePanic(format string, args ...interface{}) {
 }
 
 func main() {
+	logrus.Info("initializing huawei csi plugin")
 	flag.Parse()
 
 	// ensure flags status
@@ -272,6 +284,7 @@ func main() {
 }
 
 func listenEndpoint(endpoint string) net.Listener {
+	log.Infof("initializing endpoint %s", endpoint)
 	endpointDir := filepath.Dir(endpoint)
 	_, err := os.Stat(endpointDir)
 	if err != nil && os.IsNotExist(err) {
@@ -289,6 +302,7 @@ func listenEndpoint(endpoint string) net.Listener {
 			}
 		}
 	}
+	log.Infof("listening %s", endpoint)
 	listener, err := net.Listen("unix", endpoint)
 	if err != nil {
 		log.Fatalf("Listen on %s error: %v", endpoint, err)

@@ -166,7 +166,7 @@ func execShellCmd(ctx context.Context, format string, logFilter bool, args ...in
 	cmd := fmt.Sprintf(format, args...)
 	log.AddContext(ctx).Infof("Gonna run shell cmd \"%s\".", MaskSensitiveInfo(cmd))
 
-	execCmd := []string{"-i/proc/1/ns/ipc", "-m/proc/1/ns/mnt", "-n/proc/1/ns/net", "-u/proc/1/ns/uts", "/bin/sh",
+	execCmd := []string{"-i/proc/1/ns/ipc", "-m/proc/1/ns/mnt", "-n/proc/1/ns/net", "-u/proc/1/ns/uts", "/bin/bash",
 		"-c", cmd}
 	shCmd := exec.Command("nsenter", execCmd...)
 	var timeOut bool
@@ -337,7 +337,7 @@ func CopyMap(srcMap interface{}) map[string]interface{} {
 func StrToBool(ctx context.Context, str string) bool {
 	b, err := strconv.ParseBool(str)
 	if err != nil {
-		log.AddContext(ctx).Warningf("Parse bool string %s error, return false")
+		log.AddContext(ctx).Warningf("Parse bool string %s error, return false", err)
 		return false
 	}
 

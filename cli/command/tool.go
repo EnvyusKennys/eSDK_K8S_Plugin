@@ -31,7 +31,6 @@ import (
 	k8sClient "huawei-csi-driver/cli/client"
 	"huawei-csi-driver/cli/config"
 	"huawei-csi-driver/utils/log"
-	"huawei-csi-driver/utils/pwd"
 
 	fusionstorageClient "huawei-csi-driver/storage/fusionstorage/client"
 	oceanstorClient "huawei-csi-driver/storage/oceanstor/client"
@@ -105,12 +104,6 @@ func safeExit() {
 func getBackendSecretMap(nameToAccountMap map[string]backendAccount) (map[string]string, error) {
 	secretMap := make(map[string]string)
 	for backendName, account := range nameToAccountMap {
-		encrypted, err := pwd.Encrypt(account.Password, account.KeyText)
-		if err != nil {
-			return nil, fmt.Errorf("encrypt storage %s error: %v", backendName, err)
-		}
-
-		account.Password = encrypted
 		secretBytes, err := json.Marshal(account)
 		if err != nil {
 			return nil, fmt.Errorf("marshal secret info failed, error: %v", err)
