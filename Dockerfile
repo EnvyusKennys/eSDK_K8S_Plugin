@@ -1,9 +1,9 @@
 FROM golang:1.17-buster AS builder
 
-ENV GOARCH=arm64
+ENV GOARCH=arm64 GOOS=linux
 WORKDIR /src
 COPY . /src/
-RUN go build -o bin/huawei-csi ./src/csi
+RUN go build -o bin/huawei-csi ./csi
 
 # FROM debian:buster
 FROM --platform=linux/arm64 debian:buster
