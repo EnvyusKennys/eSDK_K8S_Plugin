@@ -23,7 +23,6 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"time"
 
 	"github.com/container-storage-interface/spec/lib/go/csi"
@@ -183,15 +182,6 @@ func mergeData(config CSIConfig, secret CSISecret) error {
 }
 
 func updateBackendCapabilities() {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Errorf("Runtime error caught in updateBackendCapabilities routine: %v", r)
-			log.Errorf("%s", debug.Stack())
-		}
-		log.Flush()
-		log.Close()
-	}()
-
 	err := backend.SyncUpdateCapabilities()
 	if err != nil {
 		raisePanic("Update backend capabilities error: %v", err)

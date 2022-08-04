@@ -99,7 +99,7 @@ func (p *SAN) prepareVolObj(ctx context.Context, params, res map[string]interfac
 		log.AddContext(ctx).Warningf("Expecting string for volume name, received type %T", params["name"])
 	}
 	volObj := utils.NewVolume(volName)
-	if lunWWN, ok := res["lunWWN"].(string); ok{
+	if lunWWN, ok := res["lunWWN"].(string); ok {
 		volObj.SetLunWWN(lunWWN)
 	}
 	return volObj
@@ -308,7 +308,7 @@ func (p *SAN) preExpandCheckCapacity(ctx context.Context,
 	localParentId := params["localParentId"].(int64)
 	pool, err := p.cli.GetPoolById(ctx, localParentId)
 	if err != nil || pool == nil {
-		log.AddContext(ctx).Errorf("Get storage pool %s info error: %v", localParentId, err)
+		log.AddContext(ctx).Errorf("Get storage pool %v info error: %v", localParentId, err)
 		return nil, err
 	}
 

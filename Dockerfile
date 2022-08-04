@@ -5,7 +5,8 @@ WORKDIR /src
 COPY . /src/
 RUN go build -o bin/huawei-csi ./src/csi
 
-FROM debian:buster
+# FROM debian:buster
+FROM --platform=linux/arm64 debian:buster
 COPY --from=builder /src/bin/huawei-csi /huawei-csi
 RUN apt-get install e2fsprogs
 RUN apt-get update && apt-get install -y \
